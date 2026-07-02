@@ -55,8 +55,10 @@ export function createStore({ dataFile = defaultDataFile } = {}) {
     get voucherBatches() {
       return state.voucherBatches;
     },
-    findRouter(id) {
-      const router = state.routers.find((item) => item.id === id);
+    findRouter(identifier) {
+      const router = state.routers.find(
+        (item) => item.id === identifier || item.name === identifier
+      );
       if (!router) {
         const error = new Error("Router not found");
         error.status = 404;

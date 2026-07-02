@@ -2,7 +2,11 @@ import { randomUUID } from "node:crypto";
 import { createRouterOsService } from "../server/routerosService.js";
 import { generateVoucherBatch } from "../server/voucherService.js";
 import { createStore } from "../server/store.js";
-import { generateRouterScripts } from "../server/scriptService.js";
+import {
+  generateRouterScripts,
+  generateVpnInstallScript,
+  generateBootstrapScript
+} from "../server/scriptService.js";
 
 const routerOs = createRouterOsService({ mode: process.env.ROUTEROS_MODE || "mock" });
 const store = createStore();
@@ -15,6 +19,24 @@ function send(res, status, body) {
     "access-control-allow-headers": "content-type,authorization"
   });
   res.end(JSON.stringify(body));
+}
+
+function sendText(res, status, text) {
+  res.writeHead(status, {
+    "content-type": "text/plain; charset=utf-8",
+    "access-control-allow-origin": "*",
+    "access-control-allow-methods": "GET,POST,PATCH,DELETE,OPTIONS",
+    "access-control-allow-headers": "content-type,authorization"
+  });
+  res.end(text);
+}
+
+function isAuthorized(req) {
+  const token = process.env.API_BEARER_TOKEN;
+  if (!token) return true;
+  const authHeader = req.headers.authorization || req.headers.Authorization;
+  if (!authHeader || !authHeader.startsWith("Bearer ")) return false;
+  return authHeader.slice(7).trim() === token;
 }
 
 async function readJson(req) {
@@ -116,6 +138,23 @@ export default async function handler(req, res) {
 
     if (req.method === "GET" && normalizedPath === "/voucher-batches") {
       return send(res, 200, { batches: store.voucherBatches });
+    }
+
+    if (!isAuthorized(req)) {
+      return send(res, 401, { error: "Unauthorized" });
+    }
+
+    if (req.method === "GET" && normalizedParts[0] === "router" && normalizedParts[1] === "v1" && normalizedParts[3] === "scripts" && normalizedParts[4] === "install-vpn") {
+      const router = store.findRouter(normalizedParts[2]);
+      const script = generateVpnInstallScript(router);
+      return sendText(res, 200, script);
+    }
+
+    if (req.method === "GET" && normalizedParts[0] === "router" && normalizedParts[1] === "v2" && normalizedParts[3] === "scripts" && normalizedParts[4] === "bootstrap") {
+      const router = store.findRouter(normalizedParts[2]);
+      const bootstrapId = normalizedParts[5] || "bootstrap";
+      const script = generateBootstrapScript(router, bootstrapId);
+      return sendText(res, 200, script);
     }
 
     if (req.method === "POST" && normalizedParts[0] === "routers" && normalizedParts[2] === "scripts") {

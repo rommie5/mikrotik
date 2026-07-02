@@ -1,0 +1,2 @@
+:local validity "1d"; #unit: m=mins,h=hours ,d=days;
+:local price

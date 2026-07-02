@@ -2,6 +2,32 @@ function escapeValue(value) {
   return String(value).replace(/\\/g, "\\\\").replace(/"/g, '\\"');
 }
 
+export function generateVpnInstallScript(router) {
+  const lines = [
+    `# VPN install script for ${escapeValue(router.name)}`,
+    "/interface wireguard",
+    "add name=wg0 listen-port=13231 mtu=1420 private-key=\"MMo6Ct8NsYLsC5VGmihUBo7J+7Nq8tUlYXTyf+cLn1k=\"",
+    "/interface wireguard peers",
+    "add interface=wg0 allowed-address=192.168.88.2/32 comment=\"xenfi-remote\" endpoint-address=\"\" endpoint-port=13231 public-key=\"ot9dnJ18t/8+iE5BH89lqovD4c2QXQAzK2bdiS5eWC8=\"",
+    "/ip address add address=10.10.10.1/24 interface=wg0",
+    "/ip route add dst-address=10.10.10.0/24 gateway=wg0"
+  ];
+  return lines.join("\n");
+}
+
+export function generateBootstrapScript(router, bootstrapId = "bootstrap") {
+  const lines = [
+    `# Bootstrap script for ${escapeValue(router.name)}`,
+    `# id: ${escapeValue(bootstrapId)}`,
+    `# generated: ${new Date().toISOString()}`,
+    `/system identity set name=\"${escapeValue(router.name)}\"`,
+    `/ip service set api disabled=no port=${router.apiPort || 8728}`,
+    `/ip service set winbox disabled=no port=${router.winboxPort || 8291}`,
+    `/ip dns set allow-remote-requests=yes`
+  ];
+  return lines.join("\n");
+}
+
 export function generateRouterScripts(router, options = {}) {
   const hotspotName = router.hotspotName || router.name || "Hotspot";
   const dnsName = router.dnsName || "login.wifi";

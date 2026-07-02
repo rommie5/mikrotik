@@ -30,17 +30,19 @@ export default async function handler(req, res) {
 
   const url = new URL(req.url, `http://${req.headers.host}`);
   const parts = url.pathname.split("/").filter(Boolean);
+  const normalizedParts = parts[0] === "api" ? parts.slice(1) : parts;
+  const normalizedPath = normalizedParts.length ? `/${normalizedParts.join("/")}` : "/";
 
   try {
-    if (req.method === "GET" && url.pathname === "/api/health") {
+    if (req.method === "GET" && normalizedPath === "/health") {
       return send(res, 200, { ok: true, mode: routerOs.mode });
     }
 
-    if (req.method === "GET" && url.pathname === "/api/routers") {
+    if (req.method === "GET" && normalizedPath === "/routers") {
       return send(res, 200, { routers: store.routers.map(({ password, ...router }) => router) });
     }
 
-    if (req.method === "POST" && url.pathname === "/api/routers") {
+    if (req.method === "POST" && normalizedPath === "/routers") {
       const body = await readJson(req);
       const router = store.addRouter({
         ...body,
@@ -56,49 +58,49 @@ export default async function handler(req, res) {
       return send(res, 201, { router: { ...router, password: undefined } });
     }
 
-    if (req.method === "GET" && parts[0] === "api" && parts[1] === "routers" && parts.length === 3) {
-      const router = store.findRouter(parts[2]);
+    if (req.method === "GET" && normalizedParts[0] === "routers" && normalizedParts.length === 2) {
+      const router = store.findRouter(normalizedParts[1]);
       return send(res, 200, { router: { ...router, password: undefined } });
     }
 
-    if (req.method === "PATCH" && parts[0] === "api" && parts[1] === "routers" && parts.length === 3) {
+    if (req.method === "PATCH" && normalizedParts[0] === "routers" && normalizedParts.length === 2) {
       const body = await readJson(req);
-      const router = store.updateRouter(parts[2], body);
+      const router = store.updateRouter(normalizedParts[1], body);
       return send(res, 200, { router: { ...router, password: undefined } });
     }
 
-    if (req.method === "DELETE" && parts[0] === "api" && parts[1] === "routers" && parts.length === 3) {
-      store.removeRouter(parts[2]);
+    if (req.method === "DELETE" && normalizedParts[0] === "routers" && normalizedParts.length === 2) {
+      store.removeRouter(normalizedParts[1]);
       return send(res, 200, { ok: true });
     }
 
-    if (req.method === "POST" && parts[0] === "api" && parts[1] === "routers" && parts[3] === "test") {
-      const router = store.findRouter(parts[2]);
+    if (req.method === "POST" && normalizedParts[0] === "routers" && normalizedParts[2] === "test") {
+      const router = store.findRouter(normalizedParts[1]);
       const result = await routerOs.testConnection(router);
       router.status = result.connected ? "online" : "offline";
       store.updateRouter(router.id, { status: router.status });
       return send(res, 200, result);
     }
 
-    if (req.method === "GET" && parts[0] === "api" && parts[1] === "routers" && parts[3] === "summary") {
-      const router = store.findRouter(parts[2]);
+    if (req.method === "GET" && normalizedParts[0] === "routers" && normalizedParts[2] === "summary") {
+      const router = store.findRouter(normalizedParts[1]);
       return send(res, 200, await routerOs.getSummary(router));
     }
 
-    if (req.method === "GET" && parts[0] === "api" && parts[1] === "routers" && parts[3] === "hotspot-users") {
-      const router = store.findRouter(parts[2]);
+    if (req.method === "GET" && normalizedParts[0] === "routers" && normalizedParts[2] === "hotspot-users") {
+      const router = store.findRouter(normalizedParts[1]);
       return send(res, 200, { users: await routerOs.getHotspotUsers(router) });
     }
 
-    if (req.method === "PATCH" && parts[0] === "api" && parts[1] === "routers" && parts[3] === "hotspot-users") {
-      const router = store.findRouter(parts[2]);
+    if (req.method === "PATCH" && normalizedParts[0] === "routers" && normalizedParts[2] === "hotspot-users") {
+      const router = store.findRouter(normalizedParts[1]);
       const body = await readJson(req);
-      const result = await routerOs.setHotspotUser(router, parts[4], body);
+      const result = await routerOs.setHotspotUser(router, normalizedParts[3], body);
       return send(res, 200, result);
     }
 
-    if (req.method === "POST" && parts[0] === "api" && parts[1] === "routers" && parts[3] === "vouchers") {
-      const router = store.findRouter(parts[2]);
+    if (req.method === "POST" && normalizedParts[0] === "routers" && normalizedParts[2] === "vouchers") {
+      const router = store.findRouter(normalizedParts[1]);
       const body = await readJson(req);
       const vouchers = generateVoucherBatch(body, router);
       await routerOs.createHotspotUsers(router, vouchers, body);
@@ -112,18 +114,18 @@ export default async function handler(req, res) {
       return send(res, 201, { vouchers });
     }
 
-    if (req.method === "GET" && url.pathname === "/api/voucher-batches") {
+    if (req.method === "GET" && normalizedPath === "/voucher-batches") {
       return send(res, 200, { batches: store.voucherBatches });
     }
 
-    if (req.method === "POST" && parts[0] === "api" && parts[1] === "routers" && parts.length >= 4 && parts[3] === "scripts") {
-      const router = store.findRouter(parts[2]);
+    if (req.method === "POST" && normalizedParts[0] === "routers" && normalizedParts[2] === "scripts") {
+      const router = store.findRouter(normalizedParts[1]);
       const body = await readJson(req);
       return send(res, 200, { scripts: generateRouterScripts(router, body) });
     }
 
-    if (req.method === "GET" && parts[0] === "api" && parts[1] === "routers" && parts[3] === "remote-access") {
-      const router = store.findRouter(parts[2]);
+    if (req.method === "GET" && normalizedParts[0] === "routers" && normalizedParts[2] === "remote-access") {
+      const router = store.findRouter(normalizedParts[1]);
       return send(res, 200, {
         winbox: `winbox://${router.host}:${router.winboxPort}`,
         webfig: `http://${router.host}`,

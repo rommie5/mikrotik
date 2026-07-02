@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 import "./styles.css";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4080";
+const API_URL = import.meta.env.VITE_API_URL || "/api";
 
 async function api(path, options = {}) {
   const response = await fetch(`${API_URL}${path}`, {

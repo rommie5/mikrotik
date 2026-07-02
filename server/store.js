@@ -1,8 +1,11 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
 
-const defaultDataFile = path.resolve(process.cwd(), "server", "data", "store.json");
+const defaultDataFile = process.env.STORE_FILE || (process.env.VERCEL || process.env.VERCEL_ENV
+  ? path.resolve(os.tmpdir(), "xenfi-online-store.json")
+  : path.resolve(process.cwd(), "server", "data", "store.json"));
 
 function normalizeRouter(input) {
   return {

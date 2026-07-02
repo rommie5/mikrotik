@@ -1,0 +1,27 @@
+{
+  "name": "xenfi-online",
+  "version": "0.1.0",
+  "private": true,
+  "description": "React and Node hotspot manager for MikroTik RouterOS devices.",
+  "type": "module",
+  "scripts": {
+    "dev:api": "node server/index.js",
+    "dev:web": "vite --host 0.0.0.0 --port 5173 client",
+    "dev": "concurrently \"npm run dev:api\" \"npm run dev:web\"",
+    "build": "vite build client",
+    "preview": "vite preview --host 0.0.0.0 --port 4173 client",
+    "test": "node --test server/*.test.js"
+  },
+  "dependencies": {
+    "@vitejs/plugin-react": "^4.3.4",
+    "concurrently": "^9.1.2",
+    "vite": "^6.0.7",
+    "typescript": "^5.7.2",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "lucide-react": "^0.468.0",
+    "qrcode": "^1.5.4",
+    "routeros-client": "^1.1.2"
+  },
+  "devDependencies": {}
+}

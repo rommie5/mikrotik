@@ -1,0 +1,18 @@
+{
+  "routers": [
+    {
+      "id": "955e819e-198a-4ddf-8115-e6baae785049",
+      "name": "FASTSPOT",
+      "host": "192.168.1.2",
+      "apiPort": 8728,
+      "winboxPort": 8291,
+      "username": "admin",
+      "password": "admin1",
+      "currency": "UGX",
+      "hotspotName": "FASTSPOT",
+      "dnsName": "fastspot.wifi",
+      "status": "online"
+    }
+  ],
+  "voucherBatches": []
+}

@@ -4,6 +4,7 @@
   "private": true,
   "description": "React and Node hotspot manager for MikroTik RouterOS devices.",
   "type": "module",
+  "main": "server/index.js",
   "scripts": {
     "dev:api": "node server/index.js",
     "dev:web": "vite --host 0.0.0.0 --port 5173 client",
